@@ -1,0 +1,28 @@
+{
+  "name": "omnidoc-ai-backend",
+  "version": "2.0.0",
+  "description": "Enterprise Multi-Document Intelligence, AI Mistakes Proofreader & Synthesis Engine Backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node test-api.js"
+  },
+  "keywords": [
+    "omnidoc",
+    "ai",
+    "document-intelligence",
+    "proofreader",
+    "synthesis",
+    "nlp",
+    "sqlite",
+    "express"
+  ],
+  "author": "OmniDoc AI Team",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "multer": "^1.4.5-lts.1"
+  }
+}

@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OmniDoc AI — Automated Multi-Document Intelligence & Knowledge Synthesizer</title>
+  <meta name="description" content="Process, synthesize, query, and cross-analyze massive multi-document corpora instantly without manual document-by-document reading.">
+  <meta name="theme-color" content="#0b0f19">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- App Container -->
+  <div id="app" class="app-layout">
+    
+    <!-- Top Navigation Bar -->
+    <header class="top-nav" id="topNav">
+      <div class="nav-brand">
+        <div class="brand-logo" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          <span class="pulse-indicator"></span>
+        </div>
+        <div class="brand-text">
+          <h1 class="brand-title">OmniDoc <span class="gradient-text">AI</span></h1>
+          <span class="brand-subtitle">Knowledge Synthesizer & Deep Document Intelligence</span>
+        </div>
+      </div>
+
+      <!-- Center Status / Quick Mode -->
+      <div class="nav-center-stats" id="navCenterStats">
+        <span class="status-badge live-sync">
+          <span class="status-dot"></span> In-Memory & SQL Engine Ready
+        </span>
+        <span class="status-badge" id="indexedDocCountBadge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+          <span id="docCounterText">6 Documents</span>
+        </span>
+        <button type="button" class="status-badge" id="navMistakesBadge" title="Jump to AI Mistakes & Proofreader">
+          <span class="status-dot status-dot-warning" style="background:#f43f5e; box-shadow:0 0 8px #f43f5e;"></span>
+          <span id="navMistakesText">AI Proofreader: 12 Flags</span>
+        </button>
+      </div>
+
+      <!-- Right Action Controls -->
+      <div class="nav-actions">
+        <button id="btnOpenThemeModal" class="btn btn-secondary theme-btn-highlight" title="Choose Themes & Accent Colors">
+          <span>🎨</span>
+          <span>Theme Studio</span>
+        </button>
+
+        <button id="btnOpenPasteModal" class="btn btn-secondary" title="Paste raw document text for instant extraction">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <span>Ingest Text</span>
+        </button>
+
+        <button id="btnOpenUploadModal" class="btn btn-secondary" title="Upload files (PDF, TXT, MD, JSON)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          <span>Upload File</span>
+        </button>
+
+        <button id="btnOpenCompareModal" class="btn btn-secondary" title="Compare selected documents side-by-side">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          <span>Compare (<span id="compareCount">0</span>)</span>
+        </button>
+
+        <button id="btnOpenSqlModal" class="btn btn-primary" title="Explore relational database schema & execute queries">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+          <span>SQL Studio</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Top Dashboard Subnav (View Switcher & Quick Themes) -->
+    <nav class="app-subnav" id="appSubnav" aria-label="Dashboard Views Navigation">
+      <div class="subnav-container">
+        <div class="subnav-tabs" role="tablist">
+          <button type="button" class="subnav-tab active" id="tabNavOverview" data-view="viewOverview" role="tab" aria-selected="true">
+            <span>📊</span>
+            <span>Corpus Dashboard</span>
+          </button>
+          <button type="button" class="subnav-tab" id="tabNavMistakes" data-view="viewMistakes" role="tab" aria-selected="false">
+            <span>🔍</span>
+            <span>AI Mistakes & Proofreader</span>
+            <span class="tab-badge badge-warning" id="subnavMistakeCount">12</span>
+          </button>
+          <button type="button" class="subnav-tab" id="tabNavHistory" data-view="viewHistory" role="tab" aria-selected="false">
+            <span>📜</span>
+            <span>Mistakes History</span>
+            <span class="tab-badge badge-neutral" id="subnavHistoryCount">6</span>
+          </button>
+          <button type="button" class="subnav-tab" id="tabNavInsights" data-view="viewInsights" role="tab" aria-selected="false">
+            <span>💡</span>
+            <span>Corpus Analytics</span>
+          </button>
+        </div>
+
+        <div class="subnav-right">
+          <div class="quick-theme-picker" id="quickThemePicker" title="Quick Theme Switcher">
+            <span class="quick-theme-label">Theme:</span>
+            <button type="button" class="theme-pill-btn active" data-theme-quick="cyber-dark" title="Obsidian Cyber">🌌 Cyber</button>
+            <button type="button" class="theme-pill-btn" data-theme-quick="rolex-emerald" title="Rolex Emerald Luxury">👑 Rolex</button>
+            <button type="button" class="theme-pill-btn" data-theme-quick="midnight-sapphire" title="Midnight Sapphire">💎 Sapphire</button>
+            <button type="button" class="theme-pill-btn" data-theme-quick="cyberpunk" title="Cyberpunk Neon">⚡ Neon</button>
+            <button type="button" class="theme-pill-btn" data-theme-quick="titanium-light" title="Titanium Clean Day">☀️ Light</button>
+          </div>
+          <button type="button" id="btnOpenThemeModalDirect" class="btn btn-secondary btn-sm" title="Open Complete Theme & Color Studio">
+            <span>🎨 Color Studio</span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content" id="mainContent">
+
+      <!-- ================================================================= -->
+      <!-- VIEW 1: Corpus Overview Dashboard                                 -->
+      <!-- ================================================================= -->
+      <div class="dashboard-view" id="viewOverview">
+        <!-- Hero Dashboard Metrics (Time Saved, High Risk, Entities) -->
+        <section class="metrics-grid" id="metricsGrid" aria-label="Synthesis Metrics">
+          <div class="metric-card" id="cardTimeSaved">
+            <div class="metric-icon icon-emerald">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
+            <div class="metric-info">
+              <span class="metric-label">Reading Time Saved</span>
+            <div class="metric-value-wrap">
+              <span class="metric-value" id="valTimeSaved">21.8</span>
+              <span class="metric-unit">Hours</span>
+            </div>
+            <span class="metric-subtext">Automated summary & extraction</span>
+          </div>
+        </div>
+
+        <div class="metric-card" id="cardPagesIndexed">
+          <div class="metric-icon icon-blue">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          </div>
+          <div class="metric-info">
+            <span class="metric-label">Pages Indexed</span>
+            <div class="metric-value-wrap">
+              <span class="metric-value" id="valPagesIndexed">194</span>
+              <span class="metric-unit">Pages</span>
+            </div>
+            <span class="metric-subtext"><span id="valWordCount">68,450</span> words processed</span>
+          </div>
+        </div>
+
+        <div class="metric-card" id="cardRiskDetected">
+          <div class="metric-icon icon-rose">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          </div>
+          <div class="metric-info">
+            <span class="metric-label">High-Risk Clauses</span>
+            <div class="metric-value-wrap">
+              <span class="metric-value text-rose" id="valRiskDetected">3</span>
+              <span class="metric-unit">Flagged</span>
+            </div>
+            <span class="metric-subtext">Uncapped liability & penalties</span>
+          </div>
+        </div>
+
+        <div class="metric-card" id="cardEntitiesExtracted">
+          <div class="metric-icon icon-purple">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+          </div>
+          <div class="metric-info">
+            <span class="metric-label">Extracted Entities</span>
+            <div class="metric-value-wrap">
+              <span class="metric-value text-purple" id="valEntitiesCount">48</span>
+              <span class="metric-unit">Entities</span>
+            </div>
+            <span class="metric-subtext">Money, Deadlines, Orgs, Laws</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- OmniQuery Synthesizer Hero -->
+      <section class="omni-query-section" id="omniQuerySection" aria-label="Cross-Document Natural Language Search">
+        <div class="query-card">
+          <div class="query-header">
+            <div class="query-title-row">
+              <span class="sparkle-icon">✨</span>
+              <h2>Cross-Document Intelligence Copilot</h2>
+              <span class="query-badge">Zero Manual Reading Required</span>
+            </div>
+            <p class="query-description">
+              Ask questions across all indexed contracts, financial audits, security standards, and policies simultaneously. The engine pinpoints exact citations and synthesizes cross-document answers.
+            </p>
+          </div>
+
+          <form id="queryForm" class="query-input-form" onsubmit="return false;">
+            <div class="query-input-wrapper">
+              <svg class="search-input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input 
+                type="text" 
+                id="omniQueryInput" 
+                class="omni-input" 
+                placeholder="Ask anything... e.g. 'What are our liability caps and breach penalties?' or 'Summarize Q3 revenue growth'"
+                autocomplete="off"
+                aria-label="Ask questions across all documents"
+              />
+              <button type="button" id="btnClearQuery" class="btn-clear-input" title="Clear query" style="display:none;">✕</button>
+              <button type="submit" id="btnRunQuery" class="btn btn-primary btn-query">
+                <span>Synthesize</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </button>
+            </div>
+          </form>
+
+          <!-- Prompt Preset Chips -->
+          <div class="prompt-chips-container" id="promptChips">
+            <span class="chips-label">Instant Prompts:</span>
+            <button type="button" class="chip-btn" data-query="What are our financial liability limits and breach penalty risks?">
+              ⚠️ Liability Caps & Breach Risks
+            </button>
+            <button type="button" class="chip-btn" data-query="What were the Q3 financial results, revenue growth, and capital allocation?">
+              📈 Q3 Revenue & Margins
+            </button>
+            <button type="button" class="chip-btn" data-query="What are the mandatory compliance remediation deadlines and audit findings?">
+              ⏳ Compliance & Audit Deadlines
+            </button>
+            <button type="button" class="chip-btn" data-query="What are the termination notice windows and SLA uptime requirements?">
+              📋 Termination & SLA Guarantees
+            </button>
+            <button type="button" class="chip-btn" data-query="List all cross-border data transfer rules under GDPR and EU AI Act">
+              🌐 GDPR & AI Governance
+            </button>
+          </div>
+
+          <!-- Synthesized Answer Panel (Appears dynamically) -->
+          <div class="synthesis-result-panel" id="synthesisResultPanel" style="display:none;">
+            <div class="synthesis-header">
+              <div class="synthesis-status">
+                <span class="pulse-indicator"></span>
+                <strong id="synthesisTitle">Cross-Document Synthesized Answer</strong>
+              </div>
+              <div class="synthesis-meta">
+                <span class="meta-tag" id="synthesisExecTime">42ms</span>
+                <span class="meta-tag" id="synthesisDocMatches">3 Sources Cited</span>
+                <button type="button" id="btnCopyAnswer" class="btn-icon" title="Copy answer to clipboard">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="synthesis-body" id="synthesisAnswerBody">
+              <!-- Rendered via JS -->
+            </div>
+
+            <!-- Citations & Verified Sources -->
+            <div class="synthesis-citations">
+              <span class="citations-title">Verified Citations & Exact Passages:</span>
+              <div class="citation-cards-list" id="citationCardsList">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Knowledge Library Section -->
+      <section class="library-section" id="librarySection" aria-label="Document Knowledge Base">
+        <div class="section-toolbar">
+          <div class="toolbar-left">
+            <h3 class="section-title">Knowledge Library (<span id="libraryFilteredCount">6</span>)</h3>
+            <div class="view-toggles" role="group" aria-label="Display View">
+              <button type="button" id="btnViewGrid" class="view-toggle-btn active" title="Grid View">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              </button>
+              <button type="button" id="btnViewTable" class="view-toggle-btn" title="Table View">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Filters & Sorting -->
+          <div class="toolbar-right">
+            <!-- Search Filter -->
+            <div class="input-with-icon search-filter-box">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" id="filterKeywordInput" placeholder="Filter title or content..." aria-label="Filter documents by text">
+            </div>
+
+            <!-- Category Filter -->
+            <select id="filterCategorySelect" class="select-control" aria-label="Filter by category">
+              <option value="ALL">All Categories</option>
+              <option value="Legal">Legal & Contracts</option>
+              <option value="Financial">Financial Reports</option>
+              <option value="Tech & Security">Tech & Security</option>
+              <option value="Policy">Policy & Governance</option>
+              <option value="Research">Research & Medical</option>
+              <option value="Operations">Operations</option>
+            </select>
+
+            <!-- Risk Filter -->
+            <select id="filterRiskSelect" class="select-control" aria-label="Filter by risk level">
+              <option value="ALL">All Risk Levels</option>
+              <option value="HIGH">High / Critical Risk</option>
+              <option value="MEDIUM">Medium Risk</option>
+              <option value="LOW">Low Risk</option>
+            </select>
+
+            <!-- Sort By -->
+            <select id="sortBySelect" class="select-control" aria-label="Sort documents">
+              <option value="risk-desc">Sort: Highest Risk First</option>
+              <option value="pages-desc">Sort: Most Pages</option>
+              <option value="words-desc">Sort: Longest Document</option>
+              <option value="title-asc">Sort: Title (A-Z)</option>
+              <option value="recent">Sort: Most Recent</option>
+            </select>
+
+            <!-- Reset / Preset Button -->
+            <button type="button" id="btnResetCorpus" class="btn btn-secondary btn-sm" title="Restore default enterprise documents">
+              ↻ Reset Corpus
+            </button>
+          </div>
+        </div>
+
+        <!-- Selected Document Multi-Action Bar -->
+        <div class="multi-select-banner" id="multiSelectBanner" style="display:none;">
+          <div class="banner-left">
+            <span class="selection-badge"><span id="selectedCountNumber">0</span> documents selected</span>
+            <span class="selection-hint">Select at least 2 documents to synthesize side-by-side or extract combined entities.</span>
+          </div>
+          <div class="banner-actions">
+            <button type="button" id="btnCompareSelectedAction" class="btn btn-primary btn-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Synthesize Side-by-Side
+            </button>
+            <button type="button" id="btnExportSelectedBrief" class="btn btn-secondary btn-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Export Synthesis Brief
+            </button>
+            <button type="button" id="btnClearSelection" class="btn btn-link btn-sm">Clear Selection</button>
+          </div>
+        </div>
+
+        <!-- Grid Container -->
+        <div class="documents-grid" id="documentsGridContainer">
+          <!-- Rendered dynamically by script.js -->
+        </div>
+
+        <!-- Table Container (Hidden by default) -->
+        <div class="documents-table-container" id="documentsTableContainer" style="display:none;">
+          <table class="data-table" id="documentsTable">
+            <thead>
+              <tr>
+                <th width="40"><input type="checkbox" id="selectAllCheckbox" aria-label="Select all documents"></th>
+                <th>Document Title</th>
+                <th>Category</th>
+                <th>Volume (Pages / Words)</th>
+                <th>Time Saved</th>
+                <th>Risk Rating</th>
+                <th>Key Entities</th>
+                <th width="120">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="documentsTableBody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- VIEW 2: AI Mistakes Finder & Auto-Proofreader Studio              -->
+      <!-- ================================================================= -->
+      <div class="dashboard-view" id="viewMistakes" style="display:none;">
+        <div class="mistakes-studio-card">
+          <!-- Hero Header -->
+          <div class="studio-hero-header">
+            <div class="studio-title-area">
+              <h2><span>🔍</span> AI Mistake Finder & Auto-Proofreader</h2>
+              <p>
+                Real-time neural error detection across contracts, reports, and memos. Detects spelling typos, grammatical slips, repeated words, and legal/enterprise terminology inconsistencies — and clears them with one-click AI precision.
+              </p>
+            </div>
+
+            <!-- Real-time Quality & Mistake Metrics -->
+            <div class="studio-header-stats">
+              <div class="studio-stat-box">
+                <span class="studio-stat-val text-rose" id="studioMistakesFound">0</span>
+                <span class="studio-stat-label">Total Mistakes</span>
+              </div>
+              <div class="studio-stat-box">
+                <span class="studio-stat-val" id="studioSpellingCount">0</span>
+                <span class="studio-stat-label">Spelling Typos</span>
+              </div>
+              <div class="studio-stat-box">
+                <span class="studio-stat-val" id="studioGrammarCount">0</span>
+                <span class="studio-stat-label">Grammar Flags</span>
+              </div>
+              <div class="studio-stat-box">
+                <span class="studio-stat-val" id="studioTerminologyCount">0</span>
+                <span class="studio-stat-label">Terminology</span>
+              </div>
+              <div class="studio-stat-box">
+                <span class="studio-stat-val text-emerald" id="studioQualityScore">98%</span>
+                <span class="studio-stat-label">Document Polish</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Studio Toolbar Controls -->
+          <div class="studio-controls-bar">
+            <div class="studio-controls-left">
+              <div class="source-select-group">
+                <label for="studioDocSelect">Proofread Target:</label>
+                <select id="studioDocSelect" class="form-control select-control" style="min-width:240px;" aria-label="Select document to proofread">
+                  <!-- Populated by JS -->
+                </select>
+              </div>
+
+              <div class="sample-preset-pills">
+                <span>Demo Texts:</span>
+                <button type="button" class="sample-pill-btn" id="btnLoadSlaSample">⚠️ Cloud SLA (9 Typos)</button>
+                <button type="button" class="sample-pill-btn" id="btnLoadFinancialSample">📈 Financial Memo (6 Errors)</button>
+                <button type="button" class="sample-pill-btn" id="btnLoadSecuritySample">🛡️ Security Policy (5 Flags)</button>
+                <button type="button" class="sample-pill-btn" id="btnLoadScratchpad">✍️ Clean Scratchpad</button>
+              </div>
+            </div>
+
+            <div class="studio-controls-right">
+              <button type="button" class="btn btn-secondary btn-sm" id="btnRescanMistakes" title="Re-run AI deep scanning">
+                <span>🔄 Re-Scan</span>
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnCopyCleanText" title="Copy proofread text to clipboard">
+                <span>📋 Copy Clean Text</span>
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnSaveCorrectedDoc" title="Save changes to active document">
+                <span>💾 Save to Document</span>
+              </button>
+              <button type="button" class="btn btn-primary btn-clear-all-ai" id="btnClearAllMistakesAi">
+                <span>✨ Clear All Mistakes with AI</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Dual-Pane Studio Grid -->
+          <div class="studio-dual-grid">
+            <!-- Left Pane: Editor & Highlight Preview -->
+            <div class="studio-editor-pane">
+              <div class="editor-pane-header">
+                <div class="editor-mode-toggles">
+                  <button type="button" class="mode-toggle-btn active" id="btnModeHighlights">Live Highlight View</button>
+                  <button type="button" class="mode-toggle-btn" id="btnModeRaw">Raw Text Editor</button>
+                </div>
+                <div class="editor-doc-meta">
+                  <span id="editorWordCount">0</span> words • <span id="editorCharCount">0</span> chars
+                </div>
+              </div>
+
+              <div class="studio-text-viewport">
+                <!-- Laser scanner animation beam -->
+                <div class="laser-scanner-line" id="laserScannerLine"></div>
+
+                <!-- Live Highlighted View (Wavy underlines, hover tooltips, click to fix) -->
+                <div class="highlighted-preview-box" id="highlightedTextBox" contenteditable="false" spellcheck="false">
+                  <!-- Rendered dynamically -->
+                </div>
+
+                <!-- Raw Textarea Editor -->
+                <textarea class="raw-textarea-editor" id="rawTextEditor" style="display:none;" spellcheck="false" placeholder="Type or paste document text here to inspect for mistakes..."></textarea>
+              </div>
+            </div>
+
+            <!-- Right Pane: AI Mistakes Inspector -->
+            <div class="studio-inspector-pane">
+              <div class="inspector-header">
+                <h3><span>🧠</span> Detected Mistake Words (<span id="inspectorMistakesCount">0</span>)</h3>
+                <span style="font-size:0.75rem; color:var(--text-muted);">Click any error to clear with AI</span>
+              </div>
+
+              <!-- Category Filter Chips -->
+              <div class="mistake-filter-chips" id="mistakeFilterChips">
+                <button type="button" class="filter-chip-btn active" data-filter="ALL">All Mistakes (<span id="chipCountAll">0</span>)</button>
+                <button type="button" class="filter-chip-btn" data-filter="Spelling">Spelling (<span id="chipCountSpelling">0</span>)</button>
+                <button type="button" class="filter-chip-btn" data-filter="Grammar">Grammar (<span id="chipCountGrammar">0</span>)</button>
+                <button type="button" class="filter-chip-btn" data-filter="Terminology">Terminology (<span id="chipCountTerminology">0</span>)</button>
+                <button type="button" class="filter-chip-btn" data-filter="Typo">Typos (<span id="chipCountTypo">0</span>)</button>
+              </div>
+
+              <!-- Scrollable Cards List -->
+              <div class="mistakes-cards-scroll" id="mistakesCardsContainer">
+                <!-- Populated dynamically via JS -->
+              </div>
+
+              <!-- All Clear State (Shown when 0 mistakes) -->
+              <div class="all-clear-state" id="allClearBanner" style="display:none;">
+                <div class="all-clear-icon">🎉</div>
+                <h4>Zero Mistakes Detected!</h4>
+                <p>The document is 100% polished, error-free, and audit-ready. All typos and grammar flags have been cleared by AI.</p>
+                <button type="button" class="btn btn-secondary btn-sm" id="btnAllClearRescan">Verify Again</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- VIEW 3: Mistakes History & Audit Ledger                           -->
+      <!-- ================================================================= -->
+      <div class="dashboard-view" id="viewHistory" style="display:none;">
+        <div class="history-section-card">
+          <!-- Header -->
+          <div class="history-header-row">
+            <div>
+              <h2><span>📜</span> AI Mistakes Audit Ledger & Resolution History</h2>
+              <p>
+                Complete chronological history of all typos, grammatical slips, and terminology corrections cleared by AI across your corpus.
+              </p>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <button type="button" class="btn btn-secondary btn-sm" id="btnExportHistoryCsv">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Export History (CSV)
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnClearHistoryLog">
+                Clear Log
+              </button>
+            </div>
+          </div>
+
+          <!-- History Metrics Strip -->
+          <div class="history-metrics-grid">
+            <div class="history-metric-box">
+              <div class="history-metric-icon">✨</div>
+              <div class="history-metric-info">
+                <span class="history-metric-val text-emerald" id="historyTotalCleared">24</span>
+                <span class="history-metric-label">Cleared by AI</span>
+              </div>
+            </div>
+            <div class="history-metric-box">
+              <div class="history-metric-icon">🎯</div>
+              <div class="history-metric-info">
+                <span class="history-metric-val text-cyan" id="historyAccuracyRate">99.2%</span>
+                <span class="history-metric-label">AI Accuracy Rate</span>
+              </div>
+            </div>
+            <div class="history-metric-box">
+              <div class="history-metric-icon">⏳</div>
+              <div class="history-metric-info">
+                <span class="history-metric-val" id="historyTimeSaved">48 Mins</span>
+                <span class="history-metric-label">Proofreading Saved</span>
+              </div>
+            </div>
+            <div class="history-metric-box">
+              <div class="history-metric-icon">⚠️</div>
+              <div class="history-metric-info">
+                <span class="history-metric-val text-rose" id="historyOpenFlags">0</span>
+                <span class="history-metric-label">Open Flags Pending</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- History Filters -->
+          <div class="history-filter-bar">
+            <div class="history-filter-left">
+              <div class="input-with-icon search-filter-box">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="filterHistorySearch" placeholder="Filter by mistake word or document..." aria-label="Search mistake history">
+              </div>
+
+              <select id="filterHistoryStatus" class="select-control" aria-label="Filter by resolution status">
+                <option value="ALL">All Statuses</option>
+                <option value="CLEARED">Cleared by AI</option>
+                <option value="DISMISSED">Dismissed</option>
+                <option value="REVERTED">Reverted</option>
+              </select>
+
+              <select id="filterHistoryCategory" class="select-control" aria-label="Filter by category">
+                <option value="ALL">All Categories</option>
+                <option value="Spelling">Spelling</option>
+                <option value="Grammar">Grammar</option>
+                <option value="Terminology">Terminology</option>
+                <option value="Typo">Typo</option>
+              </select>
+            </div>
+
+            <div class="history-filter-right">
+              <span style="font-size:0.78rem; color:var(--text-muted);"><span id="historyFilteredCount">0</span> entries logged</span>
+            </div>
+          </div>
+
+          <!-- History Table -->
+          <div class="history-table-container">
+            <table class="data-table" id="historyDataTable">
+              <thead>
+                <tr>
+                  <th width="150">Resolved At</th>
+                  <th>Source Document</th>
+                  <th>Mistake Word</th>
+                  <th>AI Suggestion</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                  <th width="110">Action</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- VIEW 4: Corpus Analytics & Knowledge Insights                     -->
+      <!-- ================================================================= -->
+      <div class="dashboard-view" id="viewInsights" style="display:none;">
+        <section class="insights-section" id="insightsSection" aria-label="Knowledge Analytics">
+          <div class="insights-grid">
+            <!-- Category Volume Distribution -->
+            <div class="insight-card">
+              <div class="insight-card-header">
+                <h4>Corpus Distribution by Category</h4>
+                <span class="badge-pill">Dynamic</span>
+              </div>
+              <div class="chart-bars-list" id="categoryDistributionChart">
+                <!-- Rendered via JS -->
+              </div>
+            </div>
+
+            <!-- Top Extracted High-Frequency Entities -->
+            <div class="insight-card">
+              <div class="insight-card-header">
+                <h4>Key Extracted Entities Across Repository</h4>
+                <span class="badge-pill">Auto-NER</span>
+              </div>
+              <div class="entities-cloud" id="entitiesCloud">
+                <!-- Rendered via JS -->
+              </div>
+            </div>
+
+            <!-- High Risk Hotspots & Actionable Findings -->
+            <div class="insight-card">
+              <div class="insight-card-header">
+                <h4>Critical Attention Flags Detected</h4>
+                <span class="badge-pill badge-rose">Urgent</span>
+              </div>
+              <div class="risk-findings-list" id="riskFindingsList">
+                <!-- Rendered via JS -->
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-left">
+        <strong>OmniDoc AI Engine</strong> — Automated Document Intelligence & Semantic Synthesis
+      </div>
+      <div class="footer-center">
+        Powered by Relational Schema <code>database.sql</code> & Client-Side NLP Synthesizer
+      </div>
+      <div class="footer-right">
+        <a href="#topNav" class="footer-link">Back to Top ↑</a>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 1: Document Detail & Deep Synthesis Inspector Drawer/Modal          -->
+  <!-- ========================================================================= -->
+  <div class="modal-backdrop" id="docDetailModal" role="dialog" aria-modal="true" aria-labelledby="detailDocTitle" style="display:none;">
+    <div class="modal-window modal-xl">
+      <div class="modal-header">
+        <div class="header-left-meta">
+          <span class="category-badge" id="detailDocCategory">Legal</span>
+          <h2 class="modal-title" id="detailDocTitle">Document Title</h2>
+        </div>
+        <div class="header-right-meta">
+          <span class="risk-badge" id="detailDocRiskBadge">HIGH RISK</span>
+          <button type="button" class="btn-close-modal" id="btnCloseDetailModal" aria-label="Close modal">✕</button>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Strip -->
+      <div class="detail-stats-bar" id="detailStatsBar">
+        <div class="stat-item">
+          <span class="stat-name">Pages:</span>
+          <strong id="detailPages">28</strong>
+        </div>
+        <div class="stat-item">
+          <span class="stat-name">Words:</span>
+          <strong id="detailWords">9,250</strong>
+        </div>
+        <div class="stat-item">
+          <span class="stat-name">Est. Read Time Saved:</span>
+          <strong id="detailTimeSaved">46 mins</strong>
+        </div>
+        <div class="stat-item">
+          <span class="stat-name">Risk Score:</span>
+          <strong id="detailRiskScore">8.2 / 10</strong>
+        </div>
+        <div class="stat-item">
+          <span class="stat-name">Confidence:</span>
+          <strong id="detailConfidence">98%</strong>
+        </div>
+      </div>
+
+      <!-- Modal Tabs Navigation -->
+      <div class="modal-tabs">
+        <button type="button" class="tab-btn active" data-tab="tabSummary">⚡ Automated Executive Summary</button>
+        <button type="button" class="tab-btn" data-tab="tabKeyTakeaways">🎯 Key Takeaways & Obligations</button>
+        <button type="button" class="tab-btn" data-tab="tabEntities">🏷️ Extracted Entities (NER)</button>
+        <button type="button" class="tab-btn" data-tab="tabChunks">📑 Passage Chunks & Flags</button>
+        <button type="button" class="tab-btn" data-tab="tabRawText">📄 Full Text Viewer</button>
+        <button type="button" class="tab-btn" data-tab="tabDetailMistakes">🔍 AI Mistakes (<span id="detailMistakesCount">0</span>)</button>
+      </div>
+
+      <!-- Modal Body Content -->
+      <div class="modal-body">
+        <!-- Tab 1: Executive Summary -->
+        <div class="tab-pane active" id="tabSummary">
+          <div class="summary-hero-box">
+            <h4>Executive Synthesis (Zero Manual Reading Needed)</h4>
+            <p id="detailExecutiveSummaryText" class="exec-summary-text"></p>
+          </div>
+          <div class="extractive-bullets-section">
+            <h4>Top Extracted Key Sentences (TF-IDF Ranked):</h4>
+            <ul id="detailRankedSentencesList" class="styled-bullets"></ul>
+          </div>
+        </div>
+
+        <!-- Tab 2: Key Takeaways -->
+        <div class="tab-pane" id="tabKeyTakeaways">
+          <div class="takeaways-container">
+            <h4>Action Items, Commitments & Safeguards</h4>
+            <div id="detailTakeawaysList" class="takeaways-list"></div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Extracted Entities -->
+        <div class="tab-pane" id="tabEntities">
+          <div class="entities-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Entity Type</th>
+                  <th>Extracted Value</th>
+                  <th>Occurrences</th>
+                  <th>Context Snippet</th>
+                </tr>
+              </thead>
+              <tbody id="detailEntitiesTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab 4: Granular Chunks & Flags -->
+        <div class="tab-pane" id="tabChunks">
+          <div id="detailChunksList" class="chunks-container"></div>
+        </div>
+
+        <!-- Tab 5: Raw Text -->
+        <div class="tab-pane" id="tabRawText">
+          <div class="raw-text-viewer">
+            <div class="text-viewer-toolbar">
+              <span class="text-viewer-hint">Entities and risk clauses are highlighted automatically:</span>
+              <button type="button" id="btnCopyRawText" class="btn btn-secondary btn-sm">Copy Document Text</button>
+            </div>
+            <pre id="detailRawTextContent" class="raw-document-display"></pre>
+          </div>
+        </div>
+
+        <!-- Tab 6: Document Mistakes -->
+        <div class="tab-pane" id="tabDetailMistakes">
+          <div class="doc-mistakes-header">
+            <div>
+              <h4>AI Proofreading & Mistake Resolution</h4>
+              <p class="text-secondary" style="font-size:0.85rem;">Scanned document text for spelling errors, grammar flags, and terminology issues.</p>
+            </div>
+            <div class="doc-mistakes-actions">
+              <button type="button" class="btn btn-primary btn-sm btn-clear-all-ai" id="btnClearAllModalDocMistakes">
+                ✨ Clear All Mistakes with AI
+              </button>
+            </div>
+          </div>
+          <div id="detailMistakesList" class="detail-mistakes-container">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button type="button" id="btnExportDocMarkdown" class="btn btn-secondary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Export Summary Brief (.MD)
+        </button>
+        <button type="button" id="btnExportDocJson" class="btn btn-secondary">
+          Export Structured JSON
+        </button>
+        <button type="button" class="btn btn-primary" id="btnCloseDetailFooter">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 2: Cross-Document Comparative Matrix Modal                          -->
+  <!-- ========================================================================= -->
+  <div class="modal-backdrop" id="compareModal" role="dialog" aria-modal="true" aria-labelledby="compareModalTitle" style="display:none;">
+    <div class="modal-window modal-xl">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="compareModalTitle">Cross-Document Comparative Synthesis Matrix</h2>
+          <span class="modal-subtitle">Direct multi-document comparison without manual checking</span>
+        </div>
+        <button type="button" class="btn-close-modal" id="btnCloseCompareModal" aria-label="Close modal">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="comparison-matrix-wrapper" id="comparisonMatrixWrapper">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" id="btnDownloadComparisonCsv" class="btn btn-secondary">Download Matrix (CSV)</button>
+        <button type="button" class="btn btn-primary" id="btnCloseCompareFooter">Close Matrix</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 3: Ingest Raw Text / Article Paste Modal                            -->
+  <!-- ========================================================================= -->
+  <div class="modal-backdrop" id="pasteModal" role="dialog" aria-modal="true" aria-labelledby="pasteModalTitle" style="display:none;">
+    <div class="modal-window modal-lg">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="pasteModalTitle">Ingest & Auto-Synthesize Document</h2>
+          <span class="modal-subtitle">Paste any contract, policy, report, or spec for instant extraction</span>
+        </div>
+        <button type="button" class="btn-close-modal" id="btnClosePasteModal" aria-label="Close modal">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <form id="pasteDocumentForm" onsubmit="return false;">
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="inputDocTitle">Document Title <span class="req">*</span></label>
+              <input type="text" id="inputDocTitle" class="form-control" placeholder="e.g. Master Consulting Services Agreement 2025" required>
+            </div>
+            <div class="form-group flex-1">
+              <label for="inputDocCategory">Category</label>
+              <select id="inputDocCategory" class="form-control">
+                <option value="Legal">Legal & Contracts</option>
+                <option value="Financial">Financial Reports</option>
+                <option value="Tech & Security">Tech & Security</option>
+                <option value="Policy">Policy & Governance</option>
+                <option value="Research">Research & Medical</option>
+                <option value="Operations">Operations</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="label-with-actions">
+              <label for="inputDocRawText">Raw Document Text <span class="req">*</span></label>
+              <button type="button" id="btnLoadSampleText" class="btn-link">Load Sample Legal Text</button>
+            </div>
+            <textarea id="inputDocRawText" class="form-control text-area" rows="10" placeholder="Paste full document text, clauses, terms, policy guidelines or financial statements here..." required></textarea>
+          </div>
+
+          <div class="ingest-feature-notes">
+            <div class="note-pill">⚡ Auto-Calculates Read Time Saved</div>
+            <div class="note-pill">🏷️ Extracts Amounts, Deadlines & Orgs</div>
+            <div class="note-pill">⚠️ Flags High-Risk Liabilities & Fines</div>
+            <div class="note-pill">🤖 Generates Instant TL;DR Summary</div>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btnCancelPaste">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btnSubmitIngestDoc">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Auto-Process & Synthesize
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 4: Upload File Modal (Drag & Drop)                                  -->
+  <!-- ========================================================================= -->
+  <div class="modal-backdrop" id="uploadModal" role="dialog" aria-modal="true" aria-labelledby="uploadModalTitle" style="display:none;">
+    <div class="modal-window modal-md">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="uploadModalTitle">Upload Documents for Batch Analysis</h2>
+          <span class="modal-subtitle">Supported formats: .txt, .md, .json, .csv, .pdf</span>
+        </div>
+        <button type="button" class="btn-close-modal" id="btnCloseUploadModal" aria-label="Close modal">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="drop-zone" id="fileDropZone">
+          <svg class="drop-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <p class="drop-title">Drag & drop files here, or <span class="browse-link">browse</span></p>
+          <p class="drop-hint">Single or batch upload. Files will be parsed and summarized automatically.</p>
+          <input type="file" id="fileUploadInput" multiple accept=".txt,.md,.json,.csv,.pdf" class="file-hidden-input">
+        </div>
+
+        <div id="fileUploadProgressContainer" style="display:none;" class="upload-progress-container">
+          <div class="progress-bar-wrap">
+            <div class="progress-bar" id="uploadProgressBar"></div>
+          </div>
+          <span class="progress-text" id="uploadProgressText">Processing & indexing documents...</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btnCancelUpload">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 5: Relational SQL Studio & Schema Inspector Modal                   -->
+  <!-- ========================================================================= -->
+  <div class="modal-backdrop" id="sqlModal" role="dialog" aria-modal="true" aria-labelledby="sqlModalTitle" style="display:none;">
+    <div class="modal-window modal-xl">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="sqlModalTitle">Enterprise SQL Database Studio</h2>
+          <span class="modal-subtitle">Relational schema defined in <code>database.sql</code> with live in-memory execution</span>
+        </div>
+        <button type="button" class="btn-close-modal" id="btnCloseSqlModal" aria-label="Close modal">✕</button>
+      </div>
+
+      <div class="modal-tabs">
+        <button type="button" class="tab-btn active" data-tab="tabSqlRunner">⚡ Live Query Runner</button>
+        <button type="button" class="tab-btn" data-tab="tabSqlSchema">📑 Database Tables & Schema</button>
+        <button type="button" class="tab-btn" data-tab="tabSqlRaw">📜 database.sql Code</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Tab 1: Live Query Runner -->
+        <div class="tab-pane active" id="tabSqlRunner">
+          <div class="sql-runner-controls">
+            <div class="sql-presets-row">
+              <label for="sqlPresetSelect">Run Pre-Configured Analytics Query:</label>
+              <select id="sqlPresetSelect" class="form-control select-control">
+                <option value="high-risk">1. All High-Risk Documents & Risk Scores</option>
+                <option value="entities-count">2. Top Extracted Financial & Obligation Entities</option>
+                <option value="time-saved">3. Document Volume & Reading Time Saved Summary</option>
+                <option value="chunks-risk">4. Specific Passage Chunks Flagged for Legal Risk</option>
+                <option value="all-docs">5. Full Documents Table (SELECT * FROM documents)</option>
+              </select>
+              <button type="button" id="btnExecutePresetSql" class="btn btn-primary btn-sm">Execute Query</button>
+            </div>
+
+            <div class="sql-editor-container">
+              <textarea id="sqlQueryEditor" class="sql-editor" rows="4" spellcheck="false"></textarea>
+            </div>
+            
+            <div class="sql-run-actions">
+              <button type="button" id="btnRunCustomSql" class="btn btn-primary">
+                ▶ Run SQL Query
+              </button>
+              <span id="sqlExecutionStatus" class="sql-exec-status">Ready</span>
+            </div>
+          </div>
+
+          <!-- Query Results Grid -->
+          <div class="sql-results-panel">
+            <div class="results-header">
+              <span id="sqlRowCount">Results: 0 rows</span>
+              <button type="button" id="btnExportSqlCsv" class="btn-link">Export Results CSV</button>
+            </div>
+            <div class="sql-table-wrapper" id="sqlTableWrapper">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Schema Tables Overview -->
+        <div class="tab-pane" id="tabSqlSchema">
+          <div class="schema-cards-grid">
+            <div class="schema-card">
+              <h4>📋 documents</h4>
+              <p>Primary document registry with raw text, summaries, calculated read times, risk ratings, and sentiment.</p>
+              <div class="schema-fields">
+                <code>id (PK)</code>, <code>title</code>, <code>category</code>, <code>page_count</code>, <code>word_count</code>, <code>estimated_read_time_mins</code>, <code>executive_summary</code>, <code>risk_level</code>, <code>risk_score</code>
+              </div>
+            </div>
+
+            <div class="schema-card">
+              <h4>📑 document_chunks</h4>
+              <p>Passage segments enabling sub-document citation, passage-level search, and clause risk flags.</p>
+              <div class="schema-fields">
+                <code>id (PK)</code>, <code>document_id (FK)</code>, <code>chunk_index</code>, <code>page_number</code>, <code>chunk_content</code>, <code>has_risk_flag</code>, <code>risk_rationale</code>
+              </div>
+            </div>
+
+            <div class="schema-card">
+              <h4>🏷️ entities & document_entities</h4>
+              <p>Named entity repository for automatic tracking of currencies, dates, organizations, and legal covenants.</p>
+              <div class="schema-fields">
+                <code>id (PK)</code>, <code>name</code>, <code>entity_type</code>, <code>normalized_value</code>, <code>occurrence_count</code>, <code>context_snippet</code>
+              </div>
+            </div>
+
+            <div class="schema-card">
+              <h4>💬 query_history & citations</h4>
+              <p>Natural language search questions, synthesized answers, and exact passage citations.</p>
+              <div class="schema-fields">
+                <code>id (PK)</code>, <code>natural_query</code>, <code>synthesized_answer</code>, <code>referenced_doc_count</code>, <code>execution_time_ms</code>
+              </div>
+            </div>
+
+            <div class="schema-card">
+              <h4>🔍 mistake_history</h4>
+              <p>Audit ledger tracking detected errors, category, AI suggestions, and resolution status.</p>
+              <div class="schema-fields">
+                <code>id (PK)</code>, <code>document_id (FK)</code>, <code>mistake_word</code>, <code>ai_suggestion</code>, <code>category</code>, <code>severity</code>, <code>status (CLEARED/DISMISSED/REVERTED)</code>, <code>resolved_at</code>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Raw database.sql -->
+        <div class="tab-pane" id="tabSqlRaw">
+          <div class="code-view-wrapper">
+            <pre class="code-block"><code id="rawSqlCodeBlock">-- Loading database.sql schema...</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btnDownloadSqlFile">Download database.sql</button>
+        <button type="button" class="btn btn-primary" id="btnCloseSqlFooter">Close Studio</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 6: Dashboard Theme & Color Studio Modal                             -->
+  <!-- ========================================================================= -->
+  <div class="modal-backdrop" id="themeModal" role="dialog" aria-modal="true" aria-labelledby="themeModalTitle" style="display:none;">
+    <div class="modal-window modal-xl">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="themeModalTitle">🎨 Dashboard Theme & Color Studio</h2>
+          <span class="modal-subtitle">Customize visual themes, neon glows, accent palettes, and aesthetic animations</span>
+        </div>
+        <button type="button" class="btn-close-modal" id="btnCloseThemeModal" aria-label="Close modal">✕</button>
+      </div>
+
+      <div class="theme-modal-body">
+        <!-- Section 1: Themes Selection -->
+        <div>
+          <h3 class="theme-section-title">1. Curated Theme Environments</h3>
+          <p class="theme-section-sub">Choose from 8 ultra-aesthetic themes tailored for luxury, high-tech, and daylight environments.</p>
+
+          <div class="themes-grid" id="themesGrid">
+            <!-- Theme 1: Cyber Dark -->
+            <div class="theme-select-card active" data-theme-id="cyber-dark">
+              <div class="theme-card-preview" style="background:#080b11; border-color:rgba(6,182,212,0.3);">
+                <div class="preview-bar" style="background:linear-gradient(90deg,#06b6d4,#6366f1);"></div>
+                <div class="preview-mini-boxes">
+                  <div class="preview-mini-box" style="background:rgba(17,24,39,0.9);"></div>
+                  <div class="preview-mini-box" style="background:rgba(30,41,59,0.9);"></div>
+                  <div class="preview-mini-box" style="background:rgba(6,182,212,0.25);"></div>
+                </div>
+              </div>
+              <div class="theme-card-info">
+                <div>
+                  <div class="theme-card-name">🌌 Obsidian Cyber</div>
+                  <span class="theme-card-tag">Deep Dark • Neon Glow (Default)</span>
+                </div>
+                <div class="theme-active-check">✓</div>
+              </div>
+            </div>
+
+            <!-- Theme 2: Rolex Emerald Luxury -->
+            <div class="theme-select-card" data-theme-id="rolex-emerald">
+              <div class="theme-card-preview" style="background:#03140e; border-color:rgba(234,179,8,0.4);">
+                <div class="preview-bar" style="background:linear-gradient(90deg,#10b981,#eab308);"></div>
+                <div class="preview-mini-boxes">
+                  <div class="preview-mini-box" style="background:rgba(9,41,30,0.9);"></div>
+                  <div class="preview-mini-box" style="background:rgba(14,58,43,0.9);"></div>
+                  <div class="preview-mini-box" style="background:rgba(234,179,8,0.3);"></div>
+                </div>
+              </div>
+              <div class="theme-card-info">
+                <div>
+                  <div class="theme-card-name">👑 Rolex Emerald Luxury</div>
+                  <span class="theme-card-tag">British Racing Green • Rich Gold</span>
+                </div>
+                <div class="theme-active-check">✓</div>
+              </div>
+            </div>
+
+            <!-- Theme 3: Midnight Sapphire -->
+            <div class="theme-select-card" data-theme-id="midnight-sapphire">
+              <div class="theme-card-preview" style="background:#040914; border-color:rgba(56,189,248,0.35);">
+                <div class="preview-bar" style="background:linear-gradient(90deg,#38bdf8,#2563eb);"></div>
+                <div class="preview-mini-boxes">
+                  <div class="preview-mini-box" style="background:rgba(12,27,58,0.9);"></div>
+                  <div class="preview-mini-box" style="background:rgba(18,41,86,0.9);"></div>
+                  <div class="preview-mini-box" style="background:rgba(56,189,248,0.3);"></div>
+                </div>
+              </div>
+              <div class="theme-card-info">
+                <div>
+                  <div class="theme-card-name">💎 Midnight Sapphire</div>
+                  <span class="theme-card-tag">Royal Navy • Electric Oceanic</span>
+                </div>
+                <div class="theme-active-check">✓</div>
+              </div>
+            </div>
+
+            <!-- Theme 4: Cyberpunk Neon -->
+            <div class="theme-select-card" data-theme-id="cyberpunk">
+              <div class="theme-card-preview" style="background:#0e0517; border-color:rgba(236,72,153,0.4);">
+                <div class="preview-bar" style="background:linear-gradient(90deg,#ec4899,#06b6d4);"></div>
+                <div class="preview-mini-boxes">
+                  <div class="preview-mini-box" style="background:rgba(35,12,60,0.9);"></div>
+                  <div class="preview-mini-box" style="background:rgba(50,17,85,0.9);"></div>
+                  <div class="preview-mini-box" style="background:rgba(236,72,153,0.3);"></div>
+                </div>
+              </div>
+              <div class="theme-card-info">
+                <div>
+                  <div class="theme-card-name">⚡ Cyberpunk Neon</div>
+                  <span class="theme-card-tag">Magenta Abyss • Neon Pink</span>
+                </div>
+                <div class="theme-active-check">✓</div>
+              </div>
+            </div>
+
+            <!-- Theme 5: Royal Amethyst -->
+            <div class="theme-select-card" data-theme-id="royal-amethyst">
+              <div class="theme-card-preview" style="background:#10061e; border-color:rgba(168,85,247,0.4);">
+                <div class="preview-bar" style="background:linear-gradient(90deg,#a855f7,#818cf8);"></div>
+                <div class="preview-mini-boxes">
+                  <div class="preview-mini-box" style="background:rgba(38,17,70,0.9);"></div>
+                  <div class="preview-mini-box" style="background:rgba(54,25,98,0.9);"></div>
+                  <div class="preview-mini-box" style="background:rgba(168,85,247,0.3);"></div>
+                </div>
+              </div>
+              <div class="theme-card-info">
+                <div>
+                  <div class="theme-card-name">🔮 Royal Amethyst</div>
+                  <span class="theme-card-tag">Imperial Velvet Purple • Lilac</span>
+                </div>
+                <div class="theme-active-check">✓</div>
+              </div>
+            </div>
+
+            <!-- Theme 6: Sunset Crimson -->
+            <div class="theme-select-card" data-theme-id="sunset-crimson">
+              <div class="theme-card-preview" style="background:#120707; border-color:rgba(249,115,22,0.4);">
+                <div class="preview-bar" style="background:linear-gradient(90deg,#f97316,#ef4444);"></div>
+                <div class="preview-mini-boxes">
+                  <div class="preview-mini-box" style="background:rgba(46,18,18,0.9);"></div>
+                  <div class="preview-mini-box" style="background:rgba(65,26,26,0.9);"></div>
+                  <div class="preview-mini-box" style="background:rgba(249,115,22,0.3);"></div>
+                </div>
+              </div>
+              <div class="theme-card-info">
+                <div>
+                  <div class="theme-card-name">🔥 Sunset Crimson</div>
+                  <span class="theme-card-tag">Warm Charcoal • Fiery Ember</span>
+                </div>
+                <div class="theme-active-check">✓</div>
+              </div>
+            </div>
+
+            <!-- Theme 7: Matrix Terminal -->
+            <div class="theme-select-card" data-theme-id="matrix">
+              <div class="theme-card-preview" style="background:#020703; border-color:rgba(34,197,94,0.4);">
+                <div class="preview-bar" style="background:linear-gradient(90deg,#22c55e,#10b981);"></div>
+                <div class="preview-mini-boxes">
+                  <div class="preview-mini-box" style="background:rgba(8,28,14,0.9);"></div>
+                  <div class="preview-mini-box" style="background:rgba(12,42,21,0.9);"></div>
+                  <div class="preview-mini-box" style="background:rgba(34,197,94,0.3);"></div>
+                </div>
+              </div>
+              <div class="theme-card-info">
+                <div>
+                  <div class="theme-card-name">💻 Matrix Terminal</div>
+                  <span class="theme-card-tag">True Black • Phosphor Green</span>
+                </div>
+                <div class="theme-active-check">✓</div>
+              </div>
+            </div>
+
+            <!-- Theme 8: Titanium Clean Day -->
+            <div class="theme-select-card" data-theme-id="titanium-light">
+              <div class="theme-card-preview" style="background:#f1f5f9; border-color:rgba(15,23,42,0.2);">
+                <div class="preview-bar" style="background:linear-gradient(90deg,#06b6d4,#6366f1);"></div>
+                <div class="preview-mini-boxes">
+                  <div class="preview-mini-box" style="background:#ffffff; border:1px solid #e2e8f0;"></div>
+                  <div class="preview-mini-box" style="background:#ffffff; border:1px solid #e2e8f0;"></div>
+                  <div class="preview-mini-box" style="background:rgba(6,182,212,0.2);"></div>
+                </div>
+              </div>
+              <div class="theme-card-info">
+                <div>
+                  <div class="theme-card-name">☀️ Titanium Clean Day</div>
+                  <span class="theme-card-tag">High Contrast • Luxury Light Mode</span>
+                </div>
+                <div class="theme-active-check">✓</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Accent Colors Selection -->
+        <div>
+          <h3 class="theme-section-title">2. Accent Color Palette</h3>
+          <p class="theme-section-sub">Personalize highlight gradients, glowing indicators, buttons, and active tabs.</p>
+
+          <div class="accents-strip" id="accentsStrip">
+            <button type="button" class="accent-color-circle active" data-accent-id="cyan" style="background:#06b6d4;" title="Cyan Aqua">✓</button>
+            <button type="button" class="accent-color-circle" data-accent-id="gold" style="background:#eab308;" title="Rolex Imperial Gold"></button>
+            <button type="button" class="accent-color-circle" data-accent-id="emerald" style="background:#10b981;" title="Vivid Emerald"></button>
+            <button type="button" class="accent-color-circle" data-accent-id="purple" style="background:#8b5cf6;" title="Royal Violet"></button>
+            <button type="button" class="accent-color-circle" data-accent-id="indigo" style="background:#6366f1;" title="Electric Indigo"></button>
+            <button type="button" class="accent-color-circle" data-accent-id="rose" style="background:#f43f5e;" title="Crimson Rose"></button>
+            <button type="button" class="accent-color-circle" data-accent-id="orange" style="background:#f97316;" title="Sunset Amber"></button>
+            <button type="button" class="accent-color-circle" data-accent-id="sky" style="background:#0ea5e9;" title="Sky Blue"></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btnResetThemeDefaults">Reset to Default</button>
+        <button type="button" class="btn btn-primary" id="btnCloseThemeFooter">Apply & Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- Application Logic -->
+  <script src="script.js"></script>
+</body>
+</html>
